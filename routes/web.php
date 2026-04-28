@@ -2,15 +2,16 @@
 
 use Illuminate\Support\Facades\Route;
 
-/* --- Core & Shared Controllers --- */
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\DashboardController;
-
-/* --- Public / Guest Controllers --- */
+/* --- Public Controllers --- */
+use App\Http\Controllers\Public\HomeController;
 use App\Http\Controllers\Public\RegistrationController;
 use App\Http\Controllers\Public\SchoolOnboardingController;
 
-/* --- Super Admin Controllers (System Owner) --- */
+/* --- Shared & Core Controllers --- */
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\DashboardController;
+
+/* --- Super Admin Controllers --- */
 use App\Http\Controllers\SuperAdmin\SchoolController;
 use App\Http\Controllers\SuperAdmin\PlanController;
 use App\Http\Controllers\SuperAdmin\PaymentController;
@@ -18,7 +19,7 @@ use App\Http\Controllers\SuperAdmin\AdminUserController;
 use App\Http\Controllers\SuperAdmin\BankDetailController;
 use App\Http\Controllers\SuperAdmin\SupportController as SuperSupportController;
 
-/* --- School Admin Controllers (Institutional Manager) --- */
+/* --- School Admin Controllers --- */
 use App\Http\Controllers\Admin\ClassController;
 use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Admin\StudentController as AdminStudentController;
@@ -66,22 +67,29 @@ use App\Http\Controllers\Accountant\ProfileController as AccountantProfileContro
 
 /*
 |--------------------------------------------------------------------------
-| 1. PUBLIC ROUTES (Accessible to everyone)
+| 1. PUBLIC ROUTES (Accessible without Login)
 |--------------------------------------------------------------------------
 */
-Route::get('/', function () { return redirect()->route('login'); });
+
+// THE FIX: The root now loads the Homepage instead of redirecting to login
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // School Self-Onboarding
 Route::get('/register-school', [SchoolOnboardingController::class, 'showForm'])->name('public.school.register');
 Route::post('/register-school', [SchoolOnboardingController::class, 'store'])->name('public.school.store');
 
-// Individual Role Self-Registration (Links from Settings)
+// Role-Based Registration (Student, Teacher, Parent, Staff)
 Route::get('/register/{role}/{key}', [RegistrationController::class, 'showForm'])->name('public.register');
 Route::post('/register/{role}/{key}', [RegistrationController::class, 'store'])->name('public.register.store');
 
+//Static Pages
+Route::view('/support', 'support')->name('public.support');
+Route::view('/privacy-policy', 'privacy')->name('public.privacy');
+Route::view('/terms-of-service', 'terms')->name('public.terms');
+
 /*
 |--------------------------------------------------------------------------
-| 2. SHARED AUTHENTICATED ROUTES (No Subscription Check)
+| 2. SHARED AUTHENTICATED ROUTES (No Subscription Guard)
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
@@ -93,72 +101,55 @@ Route::middleware('auth')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| 3. SUPER ADMIN ROUTES (System Management)
+| 3. SUPER ADMIN ROUTES
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'verified'])->prefix('super-admin')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('super_admin.dashboard');
-    
-    // School & Plan Management
     Route::resource('schools', SchoolController::class);
     Route::patch('/schools/{school}/toggle', [SchoolController::class, 'toggleStatus'])->name('schools.toggle');
     Route::resource('plans', PlanController::class)->names('super_admin.plans');
     
-    // Revenue & Payment Verification
     Route::get('/payments', [PaymentController::class, 'index'])->name('super_admin.payments.index');
     Route::patch('/payments/{payment}/status', [PaymentController::class, 'updateStatus'])->name('super_admin.payments.update');
-    
-    // Master User Control
     Route::get('/school-admins', [AdminUserController::class, 'index'])->name('super_admin.admins.index');
     Route::put('/school-admins/{user}', [AdminUserController::class, 'update'])->name('super_admin.admins.update');
     Route::patch('/school-admins/{user}/password', [AdminUserController::class, 'resetPassword'])->name('super_admin.admins.password');
 
-    // Receiving Bank Details Setup
     Route::post('/bank-details', [BankDetailController::class, 'store'])->name('super_admin.banks.store');
     Route::put('/bank-details/{bank}', [BankDetailController::class, 'update'])->name('super_admin.banks.update');
     Route::delete('/bank-details/{bank}', [BankDetailController::class, 'destroy'])->name('super_admin.banks.destroy');
     Route::patch('/bank-details/{bank}/toggle', [BankDetailController::class, 'toggle'])->name('super_admin.banks.toggle');
 
-    // Help Center Configuration
     Route::resource('support', SuperSupportController::class)->names('super_admin.support');
 });
 
 /*
 |--------------------------------------------------------------------------
-| 4. SCHOOL PORTAL ROUTES (Guarded by Subscription)
+| 4. PORTAL ROUTES (Guarded by Subscription Check)
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'verified', 'check.subscription'])->group(function () {
 
-    // Global Dashboard Route
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    /* --- SCHOOL ADMIN (Manager) --- */
+    /* --- SCHOOL ADMIN --- */
     Route::prefix('admin')->name('admin.')->group(function () {
-        
-        // Registry
         Route::get('/students', [AdminStudentController::class, 'index'])->name('students');
         Route::resource('students', AdminStudentController::class)->except(['index']);
-        Route::patch('/students/{student}/toggle', [AdminStudentController::class, 'toggleStatus'])->name('students.toggle');
-        
         Route::get('/teachers', [AdminTeacherController::class, 'index'])->name('teachers');
         Route::resource('teachers', AdminTeacherController::class)->except(['index']);
-        Route::patch('/teachers/{teacher}/toggle', [AdminTeacherController::class, 'toggleStatus'])->name('teachers.toggle');
-
         Route::get('/staff', [StaffController::class, 'index'])->name('staff.index');
         Route::get('/staff/register', [StaffController::class, 'create'])->name('staff.create');
         Route::post('/staff/register', [StaffController::class, 'store'])->name('staff.store');
         
-        // Academic Mapping
-        Route::get('/classes', [ClassController::class, 'index'])->name('classes');
-        Route::resource('classes', ClassController::class)->except(['index']);
-        Route::get('/subjects', [SubjectController::class, 'index'])->name('subjects');
-        Route::resource('subjects', SubjectController::class)->except(['index']);
+        Route::resource('classes', ClassController::class)->names(['index' => 'classes']);
+        Route::resource('subjects', SubjectController::class)->names(['index' => 'subjects']);
+        
         Route::get('/teachers-assignments', [WorkloadController::class, 'index'])->name('teachers.assignments');
         Route::post('/teachers-assignments', [WorkloadController::class, 'store'])->name('teachers.assignments.store');
         Route::delete('/teachers-assignments/{assignment}', [WorkloadController::class, 'destroy'])->name('teachers.assignments.destroy');
 
-        // Timetables
         Route::get('/timetables', [TimetableController::class, 'index'])->name('timetables');
         Route::get('/timetables/manage/{class}', [TimetableController::class, 'manage'])->name('timetables.manage');
         Route::post('/timetables/store', [TimetableController::class, 'store'])->name('timetables.store');
@@ -166,13 +157,10 @@ Route::middleware(['auth', 'verified', 'check.subscription'])->group(function ()
         Route::delete('/timetables/{timetable}', [TimetableController::class, 'destroy'])->name('timetables.destroy');
         Route::get('/timetables/print/{class}', [TimetableController::class, 'print'])->name('timetables.print');
 
-        // Result Management
         Route::get('/result-tokens', [ResultTokenController::class, 'index'])->name('tokens');
         Route::post('/result-tokens/generate', [ResultTokenController::class, 'generate'])->name('tokens.generate');
         Route::get('/result-tokens/print', [ResultTokenController::class, 'print'])->name('tokens.print');
-        Route::post('/marks/publish/{class}/{subject}', [MarksController::class, 'publish'])->name('marks.publish');
 
-        // Finance (Admin Level)
         Route::prefix('finance')->group(function () {
             Route::get('/', [FinanceController::class, 'index'])->name('finance'); 
             Route::name('finance.')->group(function() {
@@ -186,16 +174,6 @@ Route::middleware(['auth', 'verified', 'check.subscription'])->group(function ()
             });
         });
 
-        // Parents & Settings
-        Route::get('/parents', [ParentController::class, 'index'])->name('parents');
-        Route::resource('parents', ParentController::class)->except(['index']);
-        Route::post('/parents/{parent}/link', [ParentController::class, 'linkStudent'])->name('parents.link');
-        Route::get('/linking-requests', [ParentController::class, 'showRequests'])->name('parents.requests');
-        Route::post('/linking-requests/{id}/process', [ParentController::class, 'processRequest'])->name('parents.requests.process');
-        
-        Route::get('/notice-board', [NoticeController::class, 'index'])->name('noticeboard');
-        Route::resource('noticeboard', NoticeController::class)->except(['index']);
-        
         Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
         Route::patch('/settings/academic', [SettingsController::class, 'updateAcademic'])->name('settings.academic.update');
         Route::patch('/settings/registration-status', [SettingsController::class, 'updateRegStatus'])->name('settings.reg_status.update');
@@ -203,10 +181,17 @@ Route::middleware(['auth', 'verified', 'check.subscription'])->group(function ()
         Route::patch('/settings/bank/{bank}/toggle', [SettingsController::class, 'toggleBank'])->name('settings.bank.toggle');
         Route::delete('/settings/bank/{bank}', [SettingsController::class, 'destroyBank'])->name('settings.bank.delete');
         
-        // Subscription & Support
+        Route::get('/parents', [ParentController::class, 'index'])->name('parents');
+        Route::resource('parents', ParentController::class)->except(['index']);
+        Route::post('/parents/{parent}/link', [ParentController::class, 'linkStudent'])->name('parents.link');
+        Route::get('/linking-requests', [ParentController::class, 'showRequests'])->name('parents.requests');
+        Route::post('/linking-requests/{id}/process', [ParentController::class, 'processRequest'])->name('parents.requests.process');
+        
+        Route::resource('noticeboard', NoticeController::class)->names(['index' => 'noticeboard']);
+        Route::post('/marks/publish/{class}/{subject}', [MarksController::class, 'publish'])->name('marks.publish');
         Route::get('/my-subscription', [App\Http\Controllers\Admin\SubscriptionController::class, 'index'])->name('subscription.index');
         Route::post('/my-subscription/pay', [App\Http\Controllers\Admin\SubscriptionController::class, 'store'])->name('subscription.store');
-        Route::get('/help-center', [AdminSupportController::class, 'index'])->name('support');
+        Route::get('/help-support', [AdminSupportController::class, 'index'])->name('support');
     });
 
     /* --- TEACHER PERSONA --- */
@@ -216,20 +201,14 @@ Route::middleware(['auth', 'verified', 'check.subscription'])->group(function ()
         Route::post('/assignments/store', [TeacherTaskController::class, 'store'])->name('assignments.store');
         Route::get('/assignments/{assignment}/submissions', [TeacherTaskController::class, 'submissions'])->name('assignments.submissions');
         Route::post('/submissions/{submission}/grade', [TeacherTaskController::class, 'grade'])->name('assignments.grade');
-        
         Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
         Route::get('/attendance/take/{class}', [AttendanceController::class, 'take'])->name('attendance.take');
         Route::post('/attendance/store/{class}', [AttendanceController::class, 'store'])->name('attendance.store');
         Route::get('/attendance/history/{class}', [AttendanceController::class, 'history'])->name('attendance.history');
-        Route::get('/attendance/print/{class}', [AttendanceController::class, 'print'])->name('attendance.print');
-
         Route::get('/marks', [MarksController::class, 'index'])->name('marks.index');
         Route::get('/marks/entry/{class}/{subject}', [MarksController::class, 'entry'])->name('marks.entry');
         Route::post('/marks/store/{class}/{subject}', [MarksController::class, 'store'])->name('marks.store');
-        
-        //Add teacher.marks.publish route
         Route::post('/marks/publish/{class}/{subject}', [MarksController::class, 'publish'])->name('marks.publish');
-
         Route::get('/my-timetable', [TeacherTimetableController::class, 'index'])->name('timetable.index');
         Route::get('/classes', [TeacherClassController::class, 'index'])->name('classes.index');
         Route::get('/classes/{class}', [TeacherClassController::class, 'show'])->name('classes.show');
@@ -291,5 +270,4 @@ Route::middleware(['auth', 'verified', 'check.subscription'])->group(function ()
 
 });
 
-/* --- Authentication Logic (Laravel Breeze) --- */
 require __DIR__.'/auth.php';

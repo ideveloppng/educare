@@ -136,4 +136,4 @@ Copyright © 2024 Codecraft Developers Limited. All Rights Reserved.
 📬 Contact the Developers
 
 For technical inquiries or system management, visit the Help Center within the
-portal or contact us at support@codecraft.com.
+portal or contact us at support@codecraftdevelopers.com.
