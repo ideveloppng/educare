@@ -1,58 +1,139 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+EduCare SaaS | Multi-Tenant School Management System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Laravel TailwindCSS MySQL PHP
 
-## About Laravel
+Engineered by: Codecraft Developers Limited
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+EduCare is a high-fidelity, multi-tenant Software-as-a-Service (SaaS) platform
+designed for primary and secondary institutions. It streamlines academic
+operations, financial management, and institutional communication into a
+unified, mobile-responsive ecosystem.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+🚀 Key Features
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+💎 Super Admin (The Provider)
 
-## Learning Laravel
+  - Institution Management: Full lifecycle control of subscribed schools
+    (Create, Edit, Suspend, Delete).
+  - Subscription Architecture: Automated 30-day free trials and tiered
+    monthly/yearly plans.
+  - Revenue Audit: Real-time tracking of subscription payments and verified
+    proof-of-payment.
+  - Bank Setup: Global management of receiving bank accounts for SaaS
+    subscriptions.
+  - Global Support: Configuration of help channels (WhatsApp, Email, Social
+    Media) for all clients.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+🏫 School Admin (The Manager)
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+  - Self-Onboarding: Generation of unique registration keys for public
+    enrollment of students and staff.
+  - Academic Setup: Management of Class Arms (e.g., JSS 1A, JSS 1B) and Subject
+    mapping.
+  - Timetable Master: Drag-and-drop style grid for scheduling lessons and school
+    activities (Breaks, Assembly).
+  - Parent-Student Linking: Centralized hub for approving parent requests to
+    link student profiles.
+  - Financial Oversight: Executive view of total revenue, operating expenses,
+    and payroll commitments.
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+👨‍🏫 Teacher Persona
 
-## Agentic Development
+  - Attendance Registry: Daily digital roll call with "Present/Absent/Late"
+    tracking.
+  - Assessment Terminal: Specialized Marks Entry for 3 Continuous Assessments
+    (10 marks each) and Exams (70 marks).
+  - Classroom Management: Access to assigned class registries and personal
+    teaching schedules.
+  - Task Distribution: Create and distribute assignments with file attachments
+    (PDF/Docs).
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+🎓 Student & Parent Portal
 
-```bash
-composer require laravel/boost --dev
+  - Mobile-First Design: "App-like" floating pill navigation for an immersive
+    mobile experience.
+  - Result Checker: Secure gateway requiring Serial Number and PIN (locked to
+    student and term upon first use).
+  - Fee Management: Itemized class billings and manual bank transfer proof
+    upload system.
+  - Academic Hub: Access to personal timetables, assignments, and school-wide
+    announcements.
 
-php artisan boost:install
-```
+💰 Accountant Persona
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+  - General Ledger: Comprehensive audit trail of all institutional credits
+    (Income) and debits (Expenses).
+  - Verification Pipeline: Interface to verify student payment proofs and sync
+    them with the ledger.
+  - Payroll Engine: Monthly salary processing with automated statutory
+    deductions (Pension & PAYE Tax).
 
-## Contributing
+🛠 Tech Stack & Architecture
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+  - Backend: PHP 8.2+ with Laravel 11 Framework.
+  - Frontend: Tailwind CSS for high-fidelity UI and Alpine.js for reactive
+    components.
+  - Database: MySQL (Structured for Multi-tenancy using school_id scoping).
+  - Security: Role-based access control (RBAC) and Subscription-based Middleware
+    protection.
+  - Storage: Secure local/cloud disk integration for student passports and
+    payment proofs.
+  - Identity: Unified users table for authentication with separate profiles for
+    data isolation.
 
-## Code of Conduct
+📦 Installation Guide
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+1.  Clone the Repository:
 
-## Security Vulnerabilities
+    git clone https://github.com/your-username/edunexus.git
+    cd edunexus
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+2.  Install Dependencies:
 
-## License
+    composer install
+    npm install && npm run build
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+3.  Environment Setup:
+
+    cp .env.example .env
+    php artisan key:generate
+
+4.  Database Configuration:
+
+      - Create a MySQL database named edunexus.
+      - Update .env with your DB credentials.
+
+    php artisan migrate --seed
+
+5.  Initialize Storage:
+
+    php artisan storage:link
+
+6.  Run the App:
+
+    php artisan serve
+
+🎨 UI/UX Standards
+
+  - Typography: Inter / Sans-Serif, Font-Black (900), All-Caps headers for an
+    authoritative feel.
+  - Components: Custom-built 3rem rounded cards, glass-morphism overlays, and
+    backdrop-blur modals.
+  - Responsiveness: Desktop sidebar transition to Mobile Floating Pill
+    navigation.
+  - Terminology: Simple, straightforward language (e.g., "Password" instead of
+    "Security Key").
+
+📄 License & Attribution
+
+This software is the intellectual property of Codecraft Developers Limited.
+
+Unauthorized copying, modification, or distribution of this core infrastructure
+is strictly prohibited.
+
+Copyright © 2024 Codecraft Developers Limited. All Rights Reserved.
+
+📬 Contact the Developers
+
+For technical inquiries or system management, visit the Help Center within the
+portal or contact us at support@codecraft.com.
